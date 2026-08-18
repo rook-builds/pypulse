@@ -34,11 +34,17 @@ class TestToJson:
 
 class TestToTable:
     def test_has_header(self, sample_items):
-        assert "| # | Title |" in to_table(sample_items)
+        assert "| # | Package |" in to_table(sample_items)
+
+    def test_has_downloads_column(self, sample_items):
+        assert "Downloads/mo" in to_table(sample_items)
 
     def test_escapes_pipes(self, sample_items):
         # title has no pipe, but the row must be well-formed
         assert to_table(sample_items).count("\n") >= 3
+
+    def test_empty(self, empty_items):
+        assert "No items found" in to_table(empty_items)
 
 
 class TestToCsv:
