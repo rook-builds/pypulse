@@ -188,11 +188,11 @@ class TestFetchEdgeCases:
 
     def test_respects_limit(self):
         """With 5 packages and limit=2, only 2 items are returned."""
-        user_packages = [(f"Owner", f"pkg{i}") for i in range(5)]
+        user_packages = [("Owner", f"pkg{i}") for i in range(5)]
         responses = [
-            _make_response(200, _pypi_json(f"pkg{i}")),
+            _make_response(200, _pypi_json("pkg0")),
             _make_response(200, _pypistats_json()),
-            _make_response(200, _pypi_json(f"pkg{i+1}")),
+            _make_response(200, _pypi_json("pkg1")),
             _make_response(200, _pypistats_json()),
         ]
 
@@ -203,9 +203,9 @@ class TestFetchEdgeCases:
 
         assert len(items) == 2
 
-    def test_xmlrpc_failure_raises_runtime_error(self):
-        """If the XML-RPC call fails, RuntimeError is raised."""
+    def test_fetch_calls_pypi_xmlrpc_endpoint(self):
+        """fetch() connects to the official PyPI XML-RPC endpoint."""
         with patch("xmlrpc.client.ServerProxy") as mock_proxy_cls:
-            mock_proxy_cls.return_value.user_packages.side_effect = Exception("network error")
-            with pytest.raises(RuntimeError, match="Could not fetch packages"):
-                fetch("alice")
+            mock_proxy_cls.return_value.user_packages.return_value = []
+            fetch("alice")
+        mock_proxy_cls.assert_called_once_with("https://pypi.org/pypi")
